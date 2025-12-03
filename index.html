@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Appliance Sales Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #0b1020;
+      --accent: #4f46e5;
+      --accent-soft: rgba(79, 70, 229, 0.15);
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border-subtle: #1f2933;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #facc15;
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 40%, #000 100%);
+      color: var(--text-main);
+      padding: 24px;
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+    }
+
+    .title-block p {
+      margin: 4px 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .select,
+    .input {
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      outline: none;
+      min-width: 120px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-radius: 999px;
+      padding: 9px 16px;
+      border: none;
+      color: white;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 14px 30px rgba(79, 70, 229, 0.5);
+    }
+
+    .btn-primary span.icon {
+      font-size: 1rem;
+    }
+
+    .grid-kpi {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1100px) {
+      .grid-kpi {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .grid-kpi {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      body {
+        padding: 16px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .filters {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #111827 0, #020617 60%);
+      border-radius: var(--radius-xl);
+      padding: 14px 14px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle at top, rgba(79, 70, 229, 0.14), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .kpi-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kpi-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .kpi-unit {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .kpi-trend {
+      font-size: 0.7rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--success);
+    }
+
+    .kpi-trend.neg {
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+    }
+
+    .kpi-sublabel {
+      margin-top: 2px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .card-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .table-wrapper {
+      max-height: 420px;
+      overflow: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      background: radial-gradient(circle at top, #020617 0, #000 60%);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      min-width: 600px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #020617;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 500;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    tbody tr:hover {
+      background: rgba(55, 65, 81, 0.45);
+    }
+
+    td {
+      border-bottom: 1px solid rgba(15, 23, 42, 0.85);
+    }
+
+    .sku {
+      font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.75rem;
+      color: #e5e7eb;
+    }
+
+    .pill-success,
+    .pill-warning,
+    .pill-danger {
+      font-size: 0.65rem;
+      padding: 3px 7px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .pill-success {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--success);
+    }
+
+    .pill-warning {
+      background: rgba(250, 204, 21, 0.14);
+      color: var(--warning);
+    }
+
+    .pill-danger {
+      background: rgba(248, 113, 113, 0.16);
+      color: var(--danger);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 1100px) {
+      .charts-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 230px;
+    }
+
+    .card-footer-note {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+    }
+
+    .mono {
+      font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="title-block">
+        <h1>Appliance Sales Performance</h1>
+        <p>Sell-through, days to sale, turns & returns by SKU for Brett’s inventory.</p>
+        <div class="chip-row">
+          <span class="chip">
+            <span class="chip-dot"></span>
+            eBay · Appliances & Spare Parts
+          </span>
+          <span class="chip">Dummy data for demo </span>
+        </div>
+      </div>
+
+      <div class="filters">
+        <select id="channelFilter" class="select">
+          <option value="all">All channels</option>
+          <option value="eBay">eBay</option>
+          <option value="Store">In-store</option>
+        </select>
+        <select id="categoryFilter" class="select">
+          <option value="all">All categories</option>
+        </select>
+        <button class="btn-primary" id="resetFilters">
+          <span class="icon">⟲</span>
+          Reset
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI GRID -->
+    <section class="grid-kpi" id="kpiRow">
+      <div class="card">
+        <div class="kpi-label">
+          <span>Total Revenue</span>
+          <span class="mono" style="font-size: 0.65rem; color: var(--text-muted);">Last 90 days</span>
+        </div>
+        <div class="kpi-value">
+          <span id="kpiRevenue">$0</span>
+        </div>
+        <div class="kpi-sublabel">Across all SKUs</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">
+          <span>Sell-Through Rate</span>
+        </div>
+        <div class="kpi-value">
+          <span id="kpiSellThrough">0%</span>
+        </div>
+        <div class="kpi-sublabel">Units sold ÷ units listed</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">
+          <span>Avg Days to Sale</span>
+        </div>
+        <div class="kpi-value">
+          <span id="kpiDaysToSale">0</span>
+          <span class="kpi-unit">days</span>
+        </div>
+        <div class="kpi-sublabel">From listing date to sale</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">
+          <span>Sales Velocity</span>
+        </div>
+        <div class="kpi-value">
+          <span id="kpiVelocity">0</span>
+          <span class="kpi-unit">units / day</span>
+        </div>
+        <div class="kpi-sublabel">Average across all SKUs</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">
+          <span>Returns Rate</span>
+        </div>
+        <div class="kpi-value">
+          <span id="kpiReturns">0%</span>
+        </div>
+        <div class="kpi-sublabel">Units returned ÷ units sold</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">
+          <span>Inventory Turns</span>
+        </div>
+        <div class="kpi-value">
+          <span id="kpiTurns">0.0</span>
+          <span class="kpi-unit">x / year</span>
+        </div>
+        <div class="kpi-sublabel">How fast stock cycles</div>
+      </div>
+    </section>
+
+    <!-- MAIN GRID -->
+    <section class="main-grid">
+      <!-- TABLE SIDE -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">SKU Level View</div>
+            <div class="card-subtitle">Per-SKU sell-through, days to sale, velocity & returns.</div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Listed</th>
+                <th>Sold</th>
+                <th>Sell-Through</th>
+                <th>Avg Days to Sale</th>
+                <th>Velocity</th>
+                <th>Returns</th>
+                <th>Turns</th>
+                <th>Avg Price</th>
+              </tr>
+            </thead>
+            <tbody id="skuTableBody">
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-footer-note">
+          <span>
+            <span class="status-dot"></span>
+          </span>
+          <span class="mono"></span>
+        </div>
+      </div>
+
+      <!-- CHARTS SIDE -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Performance Breakdown</div>
+            <div class="card-subtitle"></div>
+          </div>
+          <span class="tag"></span>
+        </div>
+
+        <div class="charts-grid">
+          <div>
+            <div class="card-subtitle" style="margin-bottom: 4px;">Units sold by SKU</div>
+            <div class="chart-container">
+              <canvas id="chartUnits"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="card-subtitle" style="margin-bottom: 4px;">Sell-through % by SKU</div>
+            <div class="chart-container">
+              <canvas id="chartSellThrough"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="card-subtitle" style="margin-bottom: 4px;">Returns % by SKU</div>
+            <div class="chart-container">
+              <canvas id="chartReturns"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer-note">
+          <span></span>
+          <span class="mono"></span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FINAL JS (CSV + DASHBOARD) -->
+  <script>
+    // ---------------------------------------------
+    // 1) LOAD DATA FROM CSV INSTEAD OF HARDCODING
+    // ---------------------------------------------
+    let skuData = [];
+
+    async function loadCsvData() {
+      const response = await fetch("appliance_sku_data.csv");
+      const text = await response.text();
+
+      const lines = text.trim().split("\n");
+      const headers = lines[0].split(",");
+
+      const indexOf = (name) => headers.indexOf(name);
+
+      const idxSku              = indexOf("sku");
+      const idxTitle            = indexOf("title");
+      const idxCategory         = indexOf("category");
+      const idxChannel          = indexOf("channel");
+      const idxUnitsListed      = indexOf("unitsListed");
+      const idxUnitsSold        = indexOf("unitsSold");
+      const idxUnitsReturned    = indexOf("unitsReturned");
+      const idxOnHandAvg        = indexOf("onHandAvg");
+      const idxFirstListingDate = indexOf("firstListingDate");
+      const idxLastSaleDate     = indexOf("lastSaleDate");
+      const idxAvgDaysToSale    = indexOf("avgDaysToSale");
+      const idxAvgSellingPrice  = indexOf("avgSellingPrice");
+      const idxCostPerUnit      = indexOf("costPerUnit");
+
+      skuData = lines.slice(1).map((line) => {
+        const cols = line.split(",");
+
+        return {
+          sku: cols[idxSku],
+          title: cols[idxTitle],
+          category: cols[idxCategory],
+          channel: cols[idxChannel],
+          unitsListed: Number(cols[idxUnitsListed] || 0),
+          unitsSold: Number(cols[idxUnitsSold] || 0),
+          unitsReturned: Number(cols[idxUnitsReturned] || 0),
+          onHandAvg: Number(cols[idxOnHandAvg] || 0),
+          firstListingDate: cols[idxFirstListingDate],
+          lastSaleDate: cols[idxLastSaleDate],
+          avgDaysToSale: Number(cols[idxAvgDaysToSale] || 0),
+          avgSellingPrice: Number(cols[idxAvgSellingPrice] || 0),
+          costPerUnit: Number(cols[idxCostPerUnit] || 0)
+        };
+      });
+    }
+
+    // ---------------------------------------------
+    // 2) FILTERING HELPERS
+    // ---------------------------------------------
+    function getFilteredData() {
+      const channel = document.getElementById("channelFilter").value;
+      const category = document.getElementById("categoryFilter").value;
+
+      return skuData.filter((row) => {
+        const channelOk = channel === "all" || row.channel === channel;
+        const categoryOk = category === "all" || row.category === category;
+        return channelOk && categoryOk;
+      });
+    }
+
+    // ---------------------------------------------
+    // 3) KPI CALCULATIONS
+    // ---------------------------------------------
+    function calculateKPIs(data) {
+      if (!data.length) {
+        return {
+          revenue: 0,
+          sellThrough: 0,
+          avgDaysToSale: 0,
+          velocity: 0,
+          returnsRate: 0,
+          turns: 0
+        };
+      }
+
+      let revenue = 0;
+      let totalListed = 0;
+      let totalSold = 0;
+      let totalReturns = 0;
+      let totalDaysToSaleWeighted = 0;
+      let totalUnitsForDays = 0;
+      let totalVelocity = 0;
+      let totalTurns = 0;
+
+      const minDate = new Date(
+        Math.min(...data.map((d) => new Date(d.firstListingDate).getTime()))
+      );
+      const maxDate = new Date(
+        Math.max(...data.map((d) => new Date(d.lastSaleDate).getTime()))
+      );
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const totalDays = Math.max(
+        1,
+        Math.round((maxDate.getTime() - minDate.getTime()) / msPerDay)
+      );
+
+      data.forEach((row) => {
+        const rowRevenue = row.unitsSold * row.avgSellingPrice;
+        revenue += rowRevenue;
+        totalListed += row.unitsListed;
+        totalSold += row.unitsSold;
+        totalReturns += row.unitsReturned;
+
+        totalDaysToSaleWeighted += row.avgDaysToSale * row.unitsSold;
+        totalUnitsForDays += row.unitsSold;
+
+        const velocity = row.unitsSold / totalDays;
+        totalVelocity += velocity;
+
+        const avgOnHand = row.onHandAvg || 0.0001;
+        const turnsForRow = avgOnHand
+          ? (row.unitsSold / avgOnHand) * (365 / totalDays)
+          : 0;
+        totalTurns += turnsForRow;
+      });
+
+      const sellThrough = totalListed ? (totalSold / totalListed) * 100 : 0;
+      const avgDaysToSale = totalUnitsForDays
+        ? totalDaysToSaleWeighted / totalUnitsForDays
+        : 0;
+      const avgVelocity = totalVelocity / data.length;
+      const returnsRate = totalSold ? (totalReturns / totalSold) * 100 : 0;
+      const avgTurns = totalTurns / data.length;
+
+      return {
+        revenue,
+        sellThrough,
+        avgDaysToSale,
+        velocity: avgVelocity,
+        returnsRate,
+        turns: avgTurns
+      };
+    }
+
+    // ---------------------------------------------
+    // 4) RENDER KPI CARDS & TABLE
+    // ---------------------------------------------
+    function formatCurrency(n) {
+      return "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+
+    function formatPercent(n) {
+      return n.toFixed(1) + "%";
+    }
+
+    function renderKPIs(data) {
+      const {
+        revenue,
+        sellThrough,
+        avgDaysToSale,
+        velocity,
+        returnsRate,
+        turns
+      } = calculateKPIs(data);
+
+      document.getElementById("kpiRevenue").innerText = formatCurrency(revenue);
+      document.getElementById("kpiSellThrough").innerText = formatPercent(sellThrough);
+      document.getElementById("kpiDaysToSale").innerText = avgDaysToSale.toFixed(1);
+      document.getElementById("kpiVelocity").innerText = velocity.toFixed(2);
+      document.getElementById("kpiReturns").innerText = formatPercent(returnsRate);
+      document.getElementById("kpiTurns").innerText = turns.toFixed(2);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById("skuTableBody");
+      tbody.innerHTML = "";
+
+      data.forEach((row) => {
+        const sellThrough = row.unitsListed
+          ? (row.unitsSold / row.unitsListed) * 100
+          : 0;
+        const returnsRate = row.unitsSold
+          ? (row.unitsReturned / row.unitsSold) * 100
+          : 0;
+
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const first = new Date(row.firstListingDate);
+        const last = new Date(row.lastSaleDate);
+        const totalDays = Math.max(
+          1,
+          Math.round((last.getTime() - first.getTime()) / msPerDay)
+        );
+        const velocity = row.unitsSold / totalDays;
+
+        const avgOnHand = row.onHandAvg || 0.0001;
+        const turnsForRow = avgOnHand
+          ? (row.unitsSold / avgOnHand) * (365 / totalDays)
+          : 0;
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td class="sku">${row.sku}</td>
+          <td>${row.title}</td>
+          <td>${row.category}</td>
+          <td>${row.unitsListed}</td>
+          <td>${row.unitsSold}</td>
+          <td>
+            <span class="${
+              sellThrough >= 70
+                ? "pill-success"
+                : sellThrough >= 40
+                ? "pill-warning"
+                : "pill-danger"
+            }">
+              ${sellThrough.toFixed(1)}%
+            </span>
+          </td>
+          <td>${row.avgDaysToSale.toFixed(1)}</td>
+          <td>${velocity.toFixed(2)}</td>
+          <td>
+            <span class="${
+              returnsRate <= 5
+                ? "pill-success"
+                : returnsRate <= 12
+                ? "pill-warning"
+                : "pill-danger"
+            }">
+              ${returnsRate.toFixed(1)}%
+            </span>
+          </td>
+          <td>${turnsForRow.toFixed(2)}</td>
+          <td>${formatCurrency(row.avgSellingPrice)}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ---------------------------------------------
+    // 5) CHARTS
+    // ---------------------------------------------
+    let chartUnits, chartSellThrough, chartReturns;
+
+    function buildCharts(data) {
+      const labels = data.map((d) => d.sku);
+      const units = data.map((d) => d.unitsSold);
+      const sellThroughArr = data.map((d) =>
+        d.unitsListed ? (d.unitsSold / d.unitsListed) * 100 : 0
+      );
+      const returnsArr = data.map((d) =>
+        d.unitsSold ? (d.unitsReturned / d.unitsSold) * 100 : 0
+      );
+
+      const ctxUnits = document.getElementById("chartUnits").getContext("2d");
+      const ctxST = document.getElementById("chartSellThrough").getContext("2d");
+      const ctxRet = document.getElementById("chartReturns").getContext("2d");
+
+      if (chartUnits) chartUnits.destroy();
+      if (chartSellThrough) chartSellThrough.destroy();
+      if (chartReturns) chartReturns.destroy();
+
+      chartUnits = new Chart(ctxUnits, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Units Sold",
+              data: units
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { color: "rgba(55,65,81,0.4)" }
+            }
+          }
+        }
+      });
+
+      chartSellThrough = new Chart(ctxST, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Sell-Through %",
+              data: sellThroughArr
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { color: "rgba(55,65,81,0.4)" }
+            }
+          }
+        }
+      });
+
+      chartReturns = new Chart(ctxRet, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Returns %",
+              data: returnsArr
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { color: "rgba(55,65,81,0.4)" }
+            }
+          }
+        }
+      });
+    }
+
+    // ---------------------------------------------
+    // 6) FILTER SETUP & INITIAL RENDER
+    // ---------------------------------------------
+    function initCategoryFilter() {
+      const select = document.getElementById("categoryFilter");
+      select.innerHTML = '<option value="all">All categories</option>';
+
+      const categories = [...new Set(skuData.map((d) => d.category))];
+      categories.forEach((cat) => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    }
+
+    function refreshDashboard() {
+      const data = getFilteredData();
+      renderKPIs(data);
+      renderTable(data);
+      buildCharts(data);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadCsvData()
+        .then(() => {
+          initCategoryFilter();
+
+          document
+            .getElementById("channelFilter")
+            .addEventListener("change", refreshDashboard);
+          document
+            .getElementById("categoryFilter")
+            .addEventListener("change", refreshDashboard);
+          document.getElementById("resetFilters").addEventListener("click", () => {
+            document.getElementById("channelFilter").value = "all";
+            document.getElementById("categoryFilter").value = "all";
+            refreshDashboard();
+          });
+
+          refreshDashboard();
+        })
+        .catch((err) => {
+          console.error("Error loading CSV data", err);
+        });
+    });
+  </script>
+</body>
+</html>
