@@ -1,5 +1,5 @@
 sku,title,category,channel,unitsListed,unitsSold,unitsReturned,onHandAvg,firstListingDate,lastSaleDate,avgDaysToSale,avgSellingPrice,costPerUnit,brand,model,condition,ebayItemNumber,quantityAvailable,quantitySoldOnEbay,notes
-MAY-WASH-TRNS-001,Maytag Washer Transmission 62097750,Washer Parts,eBay,80,70,3,20,2025-07-01,2025-11-30,16,189,80,Maytag,6-2097750,Used,EB001,1,68,Used tested works perfectly
+MAY-WASH-TRNS-001,Maytag Washer Transmission 62097750,Washer Parts,eBay,90,70,3,20,2025-07-01,2025-11-30,16,189,80,Maytag,6-2097750,Used,EB001,1,68,Used tested works perfectly
 FRIG-WASH-CLUTCH-002,Frigidaire Washer Clutch Body 5304516133,Washer Parts,eBay,60,45,2,18,2025-07-05,2025-11-28,14,99,40,Frigidaire,5304516133,Used,EB002,1,45,Used tested works perfect
 LG-DRY-GLASS-003,LG Dryer Inner Door Glass ADC73025601,Dryer Parts,eBay,50,38,1,15,2025-07-08,2025-11-26,12,54.9,22,LG,ADC73025601,Used,EB003,2,38,Very clean glass panel
 WHIR-WASH-STAT-004,Whirlpool Washer Stator 8565170,Washer Parts,eBay,70,52,2,22,2025-07-10,2025-11-24,15,44,18,Whirlpool,8565170,Used,EB004,1,52,Used tested works perfect
@@ -13,4 +13,5 @@ SAMS-DRY-BOARD-011,Samsung Dryer Control Board DC92-00382A,Dryer Parts,eBay,77,6
 SAMS-WASH-BOARD-012,Samsung Washer Control Board DC92-01803C,Washer Parts,eBay,72,54,2,20,2025-07-26,2025-11-08,16,38.9,16,Samsung,DC92-01803C,Used,EB012,1,54,Used tested works perfect
 FRIG-DRY-MOTOR-013,Frigidaire Dryer Motor 134156500,Dryer Parts,eBay,63,47,2,19,2025-07-28,2025-11-06,15,49,20,Frigidaire,134156500,Used,EB013,1,47,Motor spins smooth and quiet
 LG-WASH-BOARD-014,LG Washer Control Board 6871ER1097B,Washer Parts,eBay,41,30,1,12,2025-07-30,2025-11-04,17,115,45,LG,6871ER1097B,Used,EB014,1,30,Board visually inspected no burn marks
+
 FRIG-WASH-MOTOR-015,Frigidaire Washer Dryer Combo Motor 137326000,Washer Parts,eBay,52,39,2,15,2025-08-01,2025-11-02,14,39.95,16,Frigidaire,137326000,Used,EB015,1,39,Motor combo tested both directions
