@@ -583,9 +583,7 @@
 
   <!-- FINAL JS (CSV + DASHBOARD) -->
   <script>
-    // ---------------------------------------------
-    // 1) LOAD DATA FROM CSV INSTEAD OF HARDCODING
-    // ---------------------------------------------
+   
     let skuData = [];
 
     async function loadCsvData() {
@@ -632,9 +630,7 @@
       });
     }
 
-    // ---------------------------------------------
-    // 2) FILTERING HELPERS
-    // ---------------------------------------------
+   
     function getFilteredData() {
       const channel = document.getElementById("channelFilter").value;
       const category = document.getElementById("categoryFilter").value;
@@ -646,9 +642,7 @@
       });
     }
 
-    // ---------------------------------------------
-    // 3) KPI CALCULATIONS
-    // ---------------------------------------------
+   
     function calculateKPIs(data) {
       if (!data.length) {
         return {
@@ -720,9 +714,7 @@
       };
     }
 
-    // ---------------------------------------------
-    // 4) RENDER KPI CARDS & TABLE
-    // ---------------------------------------------
+   
     function formatCurrency(n) {
       return "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
     }
@@ -815,9 +807,7 @@
       });
     }
 
-    // ---------------------------------------------
-    // 5) CHARTS
-    // ---------------------------------------------
+   
     let chartUnits, chartSellThrough, chartReturns;
 
     function buildCharts(data) {
@@ -925,9 +915,7 @@
       });
     }
 
-    // ---------------------------------------------
-    // 6) FILTER SETUP & INITIAL RENDER
-    // ---------------------------------------------
+    
     function initCategoryFilter() {
       const select = document.getElementById("categoryFilter");
       select.innerHTML = '<option value="all">All categories</option>';
